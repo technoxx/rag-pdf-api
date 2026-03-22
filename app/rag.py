@@ -3,23 +3,30 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_qdrant import QdrantVectorStore
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 import os
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()
 
 QDRANT_URL = "http://localhost:6333"
 COLLECTION_NAME = "learning_rag"
 
 # Vector Embeddings for each chunk
-embedding_model = GoogleGenerativeAIEmbeddings(
-    model="models/gemini-embedding-001"
-)
+def get_embedding_model():
+    return GoogleGenerativeAIEmbeddings(
+        model="models/gemini-embedding-001",
+    )
 
-client = OpenAI(
-    api_key=os.getenv("GOOGLE_API_KEY"),
-    base_url="https://generativelanguage.googleapis.com/v1beta/"
-)
+def get_llm_client():
+    return OpenAI(
+        api_key=os.getenv("GOOGLE_API_KEY"),
+        base_url="https://generativelanguage.googleapis.com/v1beta/"
+    )
 
 def index_docs(file_path: str):
+    embedding_model = get_embedding_model()
     #load this file into py program
-    loader = PyPDFLoader(file_path=pdf_path)
+    loader = PyPDFLoader(file_path=file_path)
     docs = loader.load()  # returns page by page docs in an array like each page number is index of array eg. docs[3]
 
     # chunking the docs
@@ -42,6 +49,8 @@ def index_docs(file_path: str):
 
 
 def ask_query(user_query:str):
+    embedding_model = get_embedding_model()
+    client = get_llm_client()
     vector_db = QdrantVectorStore.from_existing_collection(
         embedding=embedding_model,
         url=QDRANT_URL,

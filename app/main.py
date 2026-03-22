@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File
 import shutil
 import os
-from rag import index_pdf, ask_query
+from .rag import index_docs, ask_query
 
 app = FastAPI()
 
@@ -21,7 +21,7 @@ async def upload_pdf(file: UploadFile = File(...)):
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    result = index_pdf(file_path)
+    result = index_docs(file_path)
     return result
 
 
